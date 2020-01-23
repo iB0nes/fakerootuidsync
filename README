@@ -6,4 +6,11 @@ The implementation is built on python 3+ and does not have other dependencies.
 Author:
     Miguel Gila <miguel.gila@cscs.ch>
 
+BUILDING
+--------
+The package can be built with:
 
+VERS=0.0.1
+REL=1; 
+wget https://github.com/miguelgila/fakerootuidsync/archive/${VERS}-${REL}/fakerootuidsync-${VERS}-${REL}.tar.gz
+rpmbuild -ta --define "_version $VERS" --define "_release $REL" fakerootuidsync-${VERS}-${REL}.tar.gz
