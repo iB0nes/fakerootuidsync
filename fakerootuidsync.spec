@@ -4,7 +4,8 @@ Version: 0.0.1
 Release: 1
 License: GPL
 Group: System Environment/Base
-Source0: %{name}-%{version}-%{release}.tar.gz
+#Source0: %{name}-%{version}-%{release}.tar.gz
+Source0:  https://github.com/miguelgila/fakerootuidsync/archive/%{gittag}/%{name}-%{version}.tar.gz  
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: python3 
 Requires: systemd
@@ -14,7 +15,8 @@ Tool to syncronise/generate /etc/subuid and /etc/subgid from users
 in the passwd/groups environment.
 
 %prep
-%setup -n %{name}-%{version}-%{release}
+#%setup -n %{name}-%{version}-%{release}
+%autosetup -n fakerootuidsync-%{gittag}
 
 %install
 install -d %{buildroot}%{_sbindir}
