@@ -23,7 +23,7 @@ subuid_tfile = None
 subuid_count = 0
 subgid_count = 0
 
-cfg_file_path = "./fakerootuidsync.yaml"
+cfg_file_path = "/etc/fakerootuidsync.yaml"
 cfg = {}
 parser = {}
 debuglevel = 0
