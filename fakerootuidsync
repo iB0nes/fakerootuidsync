@@ -14,9 +14,7 @@ import logging
 import logging.handlers
 import threading
 import __main__
-#
-# TODO Make journal to print the name of the app instead of python3
-#
+
 pwd_list = None
 pwd_count = 0
 subuid_tfile = None
@@ -133,6 +131,7 @@ def work() -> None:
 			except OSError:
 				log.error("OSError writting either %s or %s" %(GETUID_FILE, cfg['subuid_file']))
 				exit_gracefully()
+			log.info("Update completed")
 		else:
 			log.info("No need to update %s or %s." %(cfg['subgid_file'], cfg['subuid_file']))
 		#print(subuid_tfile.read())
