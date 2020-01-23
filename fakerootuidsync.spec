@@ -1,5 +1,5 @@
-%global _version 0.0.1
-%global _release 2
+%global _version 0.0.2
+%global _release 1
 %global gittag %{_version}-%{_release}
 
 Summary: Fakeroot subuid/subgid sync tool 
@@ -53,7 +53,7 @@ rm -rf %{buildroot}
 %config %{_sysconfdir}/fakerootuidsync.yaml
 
 %changelog
-* Thu Jan 23 2020 Miguel Gila <miguel.gila@cscs.ch> - 0.0.1-2
+* Thu Jan 23 2020 Miguel Gila <miguel.gila@cscs.ch> - 0.0.2-1
+- Code cleaunp
 - Fixed systemd issues with RPM packaging
-* Thu Jan 23 2020 Miguel Gila <miguel.gila@cscs.ch> - 0.0.1-1
 - Initial RPM packaging
