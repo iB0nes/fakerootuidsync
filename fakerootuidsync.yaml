@@ -1,0 +1,26 @@
+#####################################################################################
+# fakerootuidsync.yaml                                                              #
+#                                                                                   #
+# fakerootuidsync configuration file                                                #
+#  At least the following entries need to exist:                                    #
+#  subuid_file: "path/to/file"                                                      #
+#  subgid_file: "path/to/file"                                                      #
+#  minimum_user_id: 1000                                                            #
+#  service_timeout: 3                                                               #
+#                                                                                   #
+#####################################################################################
+subuid_file: "/etc/subuid"
+subgid_file: "/etc/subgid"
+
+# User ids over this value will be considered for generating the files subuid/subgid
+minimum_user_id: 1000
+
+# Users in this list will not be considered for generating the files subuid/subgid
+filtered_user_names:
+  - "nobody"
+
+# Time in seconds that the program will wait between iterating again
+service_timeout: 3600
+
+# Log level, either of ["info", "debug"]. Defaults to info
+log_level: info

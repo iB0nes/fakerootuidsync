@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+import tempfile
+import pwd
+import os
+import sys
+import argparse
+import time
+import syslog
+import signal
+import shutil
+import yaml
+import argparse
+import logging
+import logging.handlers
+import threading
+import __main__
+#
+# TODO Make journal to print the name of the app instead of python3
+#
+pwd_list = None
+pwd_count = 0
+subuid_tfile = None
+subuid_count = 0
+subgid_count = 0
+
+cfg_file_path = "./fakerootuidsync.yaml"
+cfg = {}
+parser = {}
+debuglevel = 0
+
+kill_now = False
+minimum_range = 65536
+
+UNABLE_TO_READ_CONFIG_FILE = 1
+
+def exit_gracefully() -> None:
+	""" Used by the signal handler to exit gracefully the main thread. """
+
+	global kill_now
+	kill_now = True
+
+def sig_handler(signum, frame) -> None:
+	""" Receives a signal and exits gracefully """
+	log.debug("handling signal: %s" % signum)
+	exit_gracefully()
+
+def read_config(cfg_file_path="./fakerootuidsync.yaml") -> dict: 
+	""" Loads the YAML configuration file. It does not raise any exception, but
+		logs to ERROR when a problem is encountered.
+
+	Parameters
+	----------
+	cfg_file_path: str
+		The configuration file to read. Defaults to ./fakerootuidsync.yaml
+
+	cfg : dict
+		The global dict where the configuration is stored after reading the YAML file.
+
+	Returns
+	-------
+		dict containing the configuration or None in case it cannot be read.
+	"""
+
+	cfg={}
+	try:
+		with open(cfg_file_path, 'r') as cfg_file:
+			cfg = yaml.load(cfg_file)
+	except:
+		log.error("Cannot load configuration file " + str(cfg_file_path) + ". Bailing out.")
+		return None
+
+	if ((not "subuid_file" in cfg) or (not "subgid_file" in cfg) or (not "minimm_user_id" ) or 
+		(not "service_timeout" in cfg) or (not isinstance(cfg['service_timeout'],int)) ):
+		log.error("The configuration file is invalid. Bailing out.")
+		return None
+	else:
+		return cfg
+
+def work() -> None:
+	""" Does the actual work of generating the subuid and subgid files
+
+	Parameters
+	----------
+	(global) cfg : dict
+		The global dict where the configuration is stored.
+
+	Returns
+	-------
+		None 
+	"""
+
+	try:
+		subuid_tfile = tempfile.NamedTemporaryFile(mode='w+t')
+	except:
+		log.error("Cannot create temporary files, bailing out.")
+		exit_gracefully()
+	
+	try:
+		subuid_count = len(open(cfg['subuid_file']).readlines())
+	except FileNotFoundError:
+		log.debug("Cannot open/read subuid file, assuming it has 0 entries.")
+		subuid_count = 0
+	
+	try:
+		getuid_count = len(open(cfg['subgid_file']).readlines())
+	except FileNotFoundError:
+		log.debug("Cannot open/read subgid file, assuming it has 0 entries.")
+		getuid_count = 0
+
+	try:
+		pwd_list = pwd.getpwall()
+		pwd_count = 0
+		# Filter the list and count how many entries we have received from getent()
+		for user in pwd_list:
+			if (user.pw_uid >= cfg['minimum_user_id'] and 
+				(cfg['filtered_user_names'] and user.pw_name not in cfg['filtered_user_names']) ):
+				subuid = user.pw_uid * 100000
+				subuid_range = minimum_range
+				k = str("%s:%d:%d\n" % (user.pw_name, subuid, subuid_range))
+				s = subuid_tfile.writelines(k)
+				pwd_count += 1
+				#print("%d - %s  %s --> %s" %(pwd_count, s, pw_name, k))
+		if pwd_count != subuid_count:
+			try:
+				log.info("Updating %s and %s files with a total of %d entries." % (cfg['subgid_file'], cfg['subuid_file'], pwd_count))
+				subuid_tfile.seek(0) # go to he beginning of file to allow a copy !?
+
+				shutil.copyfile(subuid_tfile.name, cfg['subuid_file'])
+				shutil.copyfile(subuid_tfile.name, cfg['subgid_file'])
+			except IOError:
+				log.error("IOError writting either %s or %s" %(GETUID_FILE, cfg['subuid_file']))
+				exit_gracefully()
+			except OSError:
+				log.error("OSError writting either %s or %s" %(GETUID_FILE, cfg['subuid_file']))
+				exit_gracefully()
+		else:
+			log.info("No need to update %s or %s." %(cfg['subgid_file'], cfg['subuid_file']))
+		#print(subuid_tfile.read())
+
+	finally:
+		subuid_tfile.close()
+		#subgid_tfile.close()
+
+
+
+def run() -> None:
+	""" Function that calls work(). Intended to be the target of a thread. 
+		It has a 1 second delay between each check for signals.
+	"""
+
+	log.debug("run() called")
+	while not kill_now:
+		work()
+		for i in range(1, cfg['service_timeout']):
+			time.sleep(i)
+			if kill_now:
+				log.info("Signal received, quitting.")
+				break
+
+if __name__ == '__main__':
+	me = os.path.basename(__main__.__file__)
+
+	log = logging.getLogger("MyLogger")
+	log.setLevel(logging.INFO)
+
+	sysloghandler = logging.handlers.SysLogHandler(address="/dev/log")
+	stdouthandler = logging.StreamHandler(sys.stdout)
+
+	parser = argparse.ArgumentParser(prog="fakerootuidsync")
+	parser.add_argument("--daemon", "-d", 
+			help="Intended to be used as a daemon, will direct output to syslog.",
+			action="store_true")
+	parser.add_argument("--verbose", "-v", 
+			help="Verbose output.",
+			action="store_true")			
+	parser.add_argument("--config_file", "-c", 
+			help="Use the specified configuration file",
+			action="store")			
+	args = parser.parse_args()
+
+	if args.verbose:
+		log.setLevel(logging.DEBUG)
+
+	if args.daemon:
+		f = logging.Formatter(me + ': %(message)s')
+		sysloghandler.setFormatter(f)
+		log.addHandler(sysloghandler)
+		log.debug("Enabling verbose output")
+		log.debug("Running in daemon mode, if not running as a systemd service, press Ctrl+C to stop.")
+		log.info("Starting in daemon mode")
+	else:
+		log.addHandler(stdouthandler)
+		if args.verbose:
+			logging.basicConfig(format='[%(levelname)s] %(message)s')
+		log.info("Running in standalone mode")
+	
+	if (args.config_file != None):
+		cfg_file_path = str(args.config_file)
+
+	log.debug("Reading configuration file %s" % cfg_file_path)
+	cfg = read_config(cfg_file_path=cfg_file_path)
+	if cfg == None:
+		log.error("Unable to read configuration file %s" % cfg_file_path)
+		sys.exit(UNABLE_TO_READ_CONFIG_FILE)
+	
+	if (cfg['log_level'] == "debug") or args.verbose:
+		log.setLevel(logging.DEBUG)
+		log.debug("Setting loglevel to debug")
+	
+	log.debug("Setting signal handler for SIGINT and SIGTERM")
+	signal.signal(signal.SIGINT, sig_handler)
+	signal.signal(signal.SIGTERM, sig_handler)
+
+	if args.daemon:
+		log.debug("Starting theads")
+		x = threading.Thread(target=run, args=(), daemon=True)
+		x.start()
+		x.join()
+	else:
+		log.debug("Running work")
+		work()
+
+	log.info("Done with the program.")
+
+

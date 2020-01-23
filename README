@@ -1,0 +1,9 @@
+This is a tool that syncronises/generates /etc/subuid and /etc/subgid
+from the contents of the UNIX passwd database.
+
+The implementation is built on python 3+ and does not have other dependencies.
+
+Author:
+    Miguel Gila <miguel.gila@cscs.ch>
+
+

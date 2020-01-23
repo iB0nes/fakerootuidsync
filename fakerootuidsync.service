@@ -1,0 +1,16 @@
+[Unit]
+Description=Fakeroot gid/uid syncronization service
+After=syslog.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/usr/sbin
+ExecStart=/usr/sbin/fakerootuidsync --daemon
+
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
