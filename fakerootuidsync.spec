@@ -1,12 +1,17 @@
+%global _version 0.0.1
+%global _release 1
+%global gittag %{_version}-%{_release}
+
 Summary: Fakeroot subuid/subgid sync tool 
 Name: fakerootuidsync
-Version: 0.0.1
-Release: 1
+Version: %{_version}
+Release: %{_release}
 License: GPL
 Group: System Environment/Base
-#Source0: %{name}-%{version}-%{release}.tar.gz
-Source0:  https://github.com/miguelgila/fakerootuidsync/archive/%{gittag}/%{name}-%{version}.tar.gz  
+
+Source0:  https://github.com/miguelgila/fakerootuidsync/archive/%{gittag}/%{name}-%{version}-%{release}.tar.gz  
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+URL: https://github.com/miguelgila/fakerootuidsync
 Requires: python3 
 Requires: systemd
 
@@ -15,7 +20,6 @@ Tool to syncronise/generate /etc/subuid and /etc/subgid from users
 in the passwd/groups environment.
 
 %prep
-#%setup -n %{name}-%{version}-%{release}
 %autosetup -n fakerootuidsync-%{gittag}
 
 %install
