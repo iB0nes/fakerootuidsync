@@ -1,4 +1,4 @@
-%global _version 0.0.2
+%global _version 0.0.3
 %global _release 1
 %global gittag %{_version}-%{_release}
 
@@ -53,6 +53,8 @@ rm -rf %{buildroot}
 %config %{_sysconfdir}/fakerootuidsync.yaml
 
 %changelog
+* Fri Jan 24 2020 Miguel Gila <miguel.gila@cscs.ch> - 0.0.3-1
+- Fixed minor issues
 * Thu Jan 23 2020 Miguel Gila <miguel.gila@cscs.ch> - 0.0.2-1
 - Code cleaunp
 - Fixed systemd issues with RPM packaging
