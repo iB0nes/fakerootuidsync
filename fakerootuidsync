@@ -86,7 +86,7 @@ def work() -> None:
 	-------
 		None 
 	"""
-
+	log.debug("work() starting")
 	try:
 		subuid_tfile = tempfile.NamedTemporaryFile(mode='w+t')
 	except:
@@ -139,6 +139,7 @@ def work() -> None:
 	finally:
 		subuid_tfile.close()
 		#subgid_tfile.close()
+	log.debug("work() completed")
 
 
 
@@ -151,7 +152,8 @@ def run() -> None:
 	while not kill_now:
 		work()
 		for i in range(1, cfg['service_timeout']):
-			time.sleep(i)
+			log.debug("Iteration i=%d" %i)
+			time.sleep(1)
 			if kill_now:
 				log.info("Signal received, quitting.")
 				break
