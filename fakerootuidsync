@@ -126,10 +126,10 @@ def work() -> None:
 				shutil.copyfile(subuid_tfile.name, cfg['subuid_file'])
 				shutil.copyfile(subuid_tfile.name, cfg['subgid_file'])
 			except IOError:
-				log.error("IOError writting either %s or %s" %(GETUID_FILE, cfg['subuid_file']))
+				log.error("IOError writting either %s or %s" %(cfg['subgid_file'], cfg['subuid_file']))
 				exit_gracefully()
 			except OSError:
-				log.error("OSError writting either %s or %s" %(GETUID_FILE, cfg['subuid_file']))
+				log.error("OSError writting either %s or %s" %(cfg['subgid_file'], cfg['subuid_file']))
 				exit_gracefully()
 			log.info("Update completed")
 		else:
@@ -184,7 +184,6 @@ if __name__ == '__main__':
 		f = logging.Formatter(me + ': %(message)s')
 		sysloghandler.setFormatter(f)
 		log.addHandler(sysloghandler)
-		log.debug("Enabling verbose output")
 		log.debug("Running in daemon mode, if not running as a systemd service, press Ctrl+C to stop.")
 		log.info("Starting in daemon mode")
 	else:
@@ -205,6 +204,7 @@ if __name__ == '__main__':
 	if (cfg['log_level'] == "debug") or args.verbose:
 		log.setLevel(logging.DEBUG)
 		log.debug("Setting loglevel to debug")
+		sysloghandler.setFormatter(logging.Formatter(me + ': (debug) %(message)s'))
 	
 	log.debug("Setting signal handler for SIGINT and SIGTERM")
 	signal.signal(signal.SIGINT, sig_handler)
