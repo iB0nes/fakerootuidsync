@@ -1,5 +1,5 @@
 %global _version 0.0.3
-%global _release 1
+%global _release 2
 %global gittag %{_version}-%{_release}
 
 Summary: Fakeroot subuid/subgid sync tool 
@@ -14,6 +14,10 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 URL: https://github.com/miguelgila/fakerootuidsync
 Requires: python3 
 Requires: systemd
+%{?el7:Requires: python36-PyYAML}
+%if 0%{?suse_version} >= 15
+Requires: python3-PyYAML
+%endif
 
 %description
 Tool to syncronise/generate /etc/subuid and /etc/subgid from users
@@ -53,6 +57,8 @@ rm -rf %{buildroot}
 %config %{_sysconfdir}/fakerootuidsync.yaml
 
 %changelog
+* Wed Feb 12 2020 Miguel Gila <miguel.gila@cscs.ch> - 0.0.3-2
+- Fixed issues when building in RHEL 7 and SLES15
 * Fri Jan 24 2020 Miguel Gila <miguel.gila@cscs.ch> - 0.0.3-1
 - Fixed minor issues
 * Thu Jan 23 2020 Miguel Gila <miguel.gila@cscs.ch> - 0.0.2-1

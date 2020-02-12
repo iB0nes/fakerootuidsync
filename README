@@ -11,6 +11,6 @@ BUILDING
 The package can be built with:
 
 VERS=0.0.3
-REL=1; 
+REL=2; 
 wget https://github.com/miguelgila/fakerootuidsync/archive/${VERS}-${REL}/fakerootuidsync-${VERS}-${REL}.tar.gz
 rpmbuild -ta --define "_version $VERS" --define "_release $REL" fakerootuidsync-${VERS}-${REL}.tar.gz
