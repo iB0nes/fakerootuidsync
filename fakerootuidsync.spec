@@ -1,5 +1,5 @@
 %global _version 0.0.3
-%global _release 2
+%global _release 3
 %global gittag %{_version}-%{_release}
 
 Summary: Fakeroot subuid/subgid sync tool 
