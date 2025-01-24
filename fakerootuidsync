@@ -27,7 +27,7 @@ parser = {}
 debuglevel = 0
 
 kill_now = False
-minimum_range = 65536
+minimum_range = 131072
 
 UNABLE_TO_READ_CONFIG_FILE = 1
 
